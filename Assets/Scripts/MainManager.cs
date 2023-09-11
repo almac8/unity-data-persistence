@@ -11,12 +11,18 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text HighScoreText;
     public GameObject GameOverText;
     
+    private string m_PlayerName;
     private bool m_Started = false;
     private int m_Points;
+
+    private string highScoreName;
+    private int highScore;
     
     private bool m_GameOver = false;
+    private bool newHighScore = false;
 
     
     // Start is called before the first frame update
@@ -36,6 +42,13 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        
+        m_PlayerName = Player.Instance.PlayerName;
+        ScoreText.text = $"{m_PlayerName} : {m_Points}";
+
+        highScoreName = Player.Instance.highScoreName;
+        highScore = Player.Instance.highScore;
+        HighScoreText.text = $"Best Score : {highScoreName} : {highScore}";
     }
 
     private void Update()
@@ -55,17 +68,38 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            if (newHighScore)
+            {
+                Player.Instance.SaveHighScore();
+                newHighScore = false;
+            }
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+        }
+        else
+        {
+          if (m_Points > highScore)
+          {
+            newHighScore = true;
+
+            highScoreName = m_PlayerName;
+            highScore = m_Points;
+
+            Player.Instance.highScoreName = highScoreName;
+            Player.Instance.highScore = highScore;
+
+            HighScoreText.text = $"Best Score : {highScoreName} : {highScore}";
+          }
         }
     }
 
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"{m_PlayerName} : {m_Points}";
     }
 
     public void GameOver()
